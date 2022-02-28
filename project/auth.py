@@ -38,6 +38,11 @@ def signup_post():
 
     user = User.query.filter_by(email=email).first()
 
+    repassword = request.form.get('re-password')
+    if password != repassword:
+        flash('your password arent match')
+        return redirect(url_for('auth.signup'))
+
     if user:
         flash('Email address already exists.')
         return redirect(url_for('auth.signup'))
