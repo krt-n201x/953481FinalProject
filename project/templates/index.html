@@ -1,10 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if not current_user.is_authenticated %}
 <h1 class="title">
-  Flask Login Example
+  Food suggestion
 </h1>
 <h2 class="subtitle">
-  Easy authentication and authorization in Flask.
+  Please login to use our application
 </h2>
+{% endif %}
+{% if current_user.is_authenticated %}
+<h1 class="title">
+  Food suggestion Today!!
+</h1>
+<h2 class="subtitle">
+  Please enjoy
+</h2>
+<ul>
+    <div class="columns is-gapless has-background-white	">
+        <div class="column">
+        <p class="box">Food name</p>
+        </div>
+        <div class="column ">
+        <p class="box">Food Picture</p>
+      </div>
+    </div>
+    {% for item in data %}
+    <div class="columns ">
+      <div class="column has-text-left title">
+        {{item.Title}}
+      </div>
+      <div class="column">
+
+        <img src="../static/FoodImages/{{item.Image_Name}}">
+
+      </div>
+    </div>
+    {% endfor %}
+
+</ul>
+{% endif %}
 {% endblock %}
