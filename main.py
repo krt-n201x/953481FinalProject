@@ -1,5 +1,10 @@
 import string
+
+import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 def get_and_clean_data():
     data = pd.read_csv('src/resource/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')
@@ -45,4 +50,8 @@ def get_and_clean_data():
         print("Error")
 
 
+def tfidf_scoring():
 
+    csv_file = "src/resource/Food Recipe.csv"
+    data = pd.read_csv(csv_file)
+    all_data = pd.DataFrame(data, columns=['Title', 'Image_Name', 'Ingredients'])
