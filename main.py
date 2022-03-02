@@ -44,7 +44,5 @@ def get_and_clean_data():
     except:
         print("Error")
 
-    dataFrame = pd.read_csv('src/resource/Food Recipe.csv')
-
 
 
