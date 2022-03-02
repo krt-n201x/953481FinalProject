@@ -1,32 +1,38 @@
 {% extends "base.html" %}
-
 {% block content %}
+<dic class="is-align-items-start">
 <h1 class="title">
-  This is your favorite list
+  This is your favorite list {{ x }}
 </h1>
+
+<div class="container is-max-desktop mb-5">
+  <form action="/favorite-search" method="POST">
+      <div class="control">
+        <input class="input is-rounded mb-5" type="text" placeholder="Search your favorite list here!">
+        <button class="button is-success is-light">search</button>
+      </div>
+    </form>
+</div>
+<div class="container"></div>
 {% for item in data %}
-<div class="columns ">
+<div class="columns is-max-desktop">
   <div class="column has-text-left title">
     {{item.foodTitle}}
   </div>
   <div class="column">
-
     <img src="../static/FoodImages/{{item.foodPicture}}">
-
   </div>
   <div class="column is-align-self-center">
     <form action="/delete-favorite" method="POST">
       <div class="control">
         <input name="foodTitle" value="{{item.foodTitle}}" hidden>
         <input name="userID" value="{{userid}}" hidden>
-        <!--            <input name="foodPicture" value="{{item.Image_Name}}" hidden>-->
         <button class="button is-link has-background-danger">delete from favorite</button>
       </div>
     </form>
-
   </div>
 </div>
 {% endfor %}
-
+</dic>
 
 {% endblock %}

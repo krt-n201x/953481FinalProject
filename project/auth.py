@@ -72,15 +72,9 @@ def add_favorite():
 
     favorite = Favorite.query.filter_by(foodTitle=foodTitle,userID=userID).first()
     if favorite :
-        flash('This menu already exists.')
+        flash(0)
         return redirect(url_for('main.homeindex'))
-    # if not g.user:
-    #     flash("Access denied, you need to sign up/in first!", "danger")
-    #     return redirect("/")
-    #
-    # else:
-    #
-    #     form = AddFavoriteForm()
+
     new_favorite = Favorite(
         userID=userID,
         foodTitle=foodTitle,
@@ -89,7 +83,7 @@ def add_favorite():
     db.session.add(new_favorite)
     db.session.commit()
 
-    print('add favorite success!!')
+    flash(1)
     return redirect(url_for('main.homeindex'))
 
 @auth.route('/delete-favorite', methods=["GET", "POST"])
