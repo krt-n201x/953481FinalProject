@@ -25,7 +25,7 @@ def profile():
 def favorite():
     favorites = Favorite.query.filter(Favorite.userID == current_user.id).all()
 
-    return render_template('favorite.html', data=favorites)
+    return render_template('favorite.html', data=favorites , userid=current_user.id)
 
 
 

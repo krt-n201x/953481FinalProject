@@ -17,49 +17,49 @@
   Please enjoy
 </h2>
 <ul>
-    <div class="columns is-gapless	">
-        <div class="column has-background-white">
-        <p class="box">Food name</p>
-        </div>
-        <div class="column has-background-white">
-        <p class="box">Food Picture</p>
-      </div>
-        <div class="column ">
-
-      </div>
+  <div class="columns is-gapless	">
+    <div class="column has-background-white">
+      <p class="box">Food name</p>
     </div>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="notification is-danger">
-                {{ messages[0] }}
-            </div>
-        {% endif %}
-        {% endwith %}
-    {% for item in data %}
+    <div class="column has-background-white">
+      <p class="box">Food Picture</p>
+    </div>
+    <div class="column ">
 
-    <div class="columns ">
-      <div class="column has-text-left title">
-        {{item.Title}}
-      </div>
-      <div class="column">
-
-        <img src="../static/FoodImages/{{item.Image_Name}}">
-
-      </div>
-        <div class="column">
-    <form action="/add-favorite" method="POST">
-        <div class="control">
-            <input name="foodTitle" value="{{item.Title}}" >
-            <input name="userID" value="{{userid}}" >
-            <input name="foodPicture" value="{{item.Image_Name}}" >
-    <button class="button is-link">Add to favorite</button>
+    </div>
   </div>
-    </form>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div class="notification is-danger">
+    {{ messages[0] }}
+  </div>
+  {% endif %}
+  {% endwith %}
+  {% for item in data %}
 
-      </div>
+  <div class="columns ">
+    <div class="column has-text-left title">
+      {{item.Title}}
     </div>
+    <div class="column">
 
-    {% endfor %}
+      <img src="../static/FoodImages/{{item.Image_Name}}">
+
+    </div>
+    <div class="column is-align-self-center">
+      <form action="/add-favorite" method="POST">
+        <div class="control">
+          <input name="foodTitle" value="{{item.Title}}" hidden>
+          <input name="userID" value="{{userid}}" hidden>
+          <input name="foodPicture" value="{{item.Image_Name}}" hidden>
+          <button class="button is-link has-background-primary">Add to favorite</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  {% endfor %}
 
 </ul>
 {% endif %}

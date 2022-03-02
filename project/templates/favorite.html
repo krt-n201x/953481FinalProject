@@ -2,14 +2,31 @@
 
 {% block content %}
 <h1 class="title">
-  Welcome, {{ name }} this is your favorite list
-
-  {% for item in data %}
-<p>
-    food name: {{item.foodTitle}}
-
-</p>
-{% endfor %}
+  This is your favorite list
 </h1>
+{% for item in data %}
+<div class="columns ">
+  <div class="column has-text-left title">
+    {{item.foodTitle}}
+  </div>
+  <div class="column">
+
+    <img src="../static/FoodImages/{{item.foodPicture}}">
+
+  </div>
+  <div class="column is-align-self-center">
+    <form action="/delete-favorite" method="POST">
+      <div class="control">
+        <input name="foodTitle" value="{{item.foodTitle}}" hidden>
+        <input name="userID" value="{{userid}}" hidden>
+        <!--            <input name="foodPicture" value="{{item.Image_Name}}" hidden>-->
+        <button class="button is-link has-background-danger">delete from favorite</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endfor %}
+
 
 {% endblock %}

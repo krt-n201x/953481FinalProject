@@ -70,9 +70,8 @@ def add_favorite():
     foodTitle = request.form.get('foodTitle')
     foodPicture = request.form.get('foodPicture')
 
-    favorite = Favorite.query.filter_by(foodTitle=foodTitle).first()
-
-    if favorite:
+    favorite = Favorite.query.filter_by(foodTitle=foodTitle,userID=userID).first()
+    if favorite :
         flash('This menu already exists.')
         return redirect(url_for('main.homeindex'))
     # if not g.user:
@@ -91,6 +90,16 @@ def add_favorite():
     db.session.commit()
 
     print('add favorite success!!')
-
-
     return redirect(url_for('main.homeindex'))
+
+@auth.route('/delete-favorite', methods=["GET", "POST"])
+def delete_favorite():
+    userID = request.form.get('userID')
+    foodTitle = request.form.get('foodTitle')
+    try:
+        delete_favorite = Favorite.query.filter(Favorite.foodTitle==foodTitle, Favorite.userID==userID).first()
+        db.session.delete(delete_favorite)
+        db.session.commit()
+        return redirect(url_for('main.favorite'))
+    except:
+        return redirect(url_for('main.homeindex'))
