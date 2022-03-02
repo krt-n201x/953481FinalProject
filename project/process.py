@@ -1,6 +1,8 @@
 
 import string
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 import pandas as pd
 
@@ -59,4 +61,20 @@ def exampleoutput(dataFrame):
     print('success create json example')
     return tempJson
     # df = pd.DataFrame(tempJson, columns=["no","artist","songname","lyric"])
+
+def favoritesearchtfidf(inputword,df_new):
+    print("TF-IDF is running...")
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2))
+    X = vectorizer.fit_transform(df_new['foodTitle'])
+    print(X.shape)
+    query = inputword
+    query_vec = vectorizer.transform([query])
+    results = cosine_similarity(X, query_vec).reshape((-1,))
+    tfidfJson = []
+    for i in results.argsort()[-10:][::-1]:
+        print(results[i])
+        tfidfJson.append({"id": df_new.iloc[i, 0],
+                         "foodTitle": df_new.iloc[i, 1],
+                         "foodPicture": df_new.iloc[i, 2]})
+    return tfidfJson
 
