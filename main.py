@@ -77,3 +77,32 @@ def tfidf_scoring_by_title():
         )
 
     return tfidf_data_ranking
+
+def tfidf_scoring_by_ingredients():
+
+    csv_file = "src/resource/Food Recipe.csv"
+    data = pd.read_csv(csv_file)
+    all_data = pd.DataFrame(data, columns=['Title', 'Image_Name', 'Ingredients'])
+
+    # Tf idf scoring #
+    query = input("Enter food ingredients: ")
+
+    tfidf_data_ranking = []
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(all_data['Ingredients'].apply(lambda x: np.str_(x)))
+    query_vectorizer = vectorizer.transform([query])
+    results = cosine_similarity(X, query_vectorizer).reshape((-1,))
+    rank = 0
+    for i in results.argsort()[-10:][::-1]:
+        rank = rank + 1
+        tfidf_data_ranking.append({
+            "Rank": rank,
+            "Title": all_data.iloc[i, 0],
+            "Image": all_data.iloc[i, 1] + ".jpg",
+            "Ingredient": all_data.iloc[i, 2],
+            "Score": results[i]
+            }
+        )
+
+    return tfidf_data_ranking
+
