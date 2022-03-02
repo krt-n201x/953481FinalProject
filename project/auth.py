@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
-from .models import User
+from .models import User, Favorite
 from . import db
 
 auth = Blueprint('auth', __name__)
@@ -18,7 +18,11 @@ def login_post():
 
     user = User.query.filter_by(email=email).first()
 
-    if not user and not check_password_hash(user.password, password):
+    if not user:
+        flash('Please check your login details and try again.')
+        return redirect(url_for('auth.login'))
+
+    if not check_password_hash(user.password, password):
         flash('Please check your login details and try again.')
         return redirect(url_for('auth.login'))
 
@@ -59,3 +63,34 @@ def signup_post():
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
+
+@auth.route('/add-favorite', methods=["GET", "POST"])
+def add_favorite():
+    userID = request.form.get('userID')
+    foodTitle = request.form.get('foodTitle')
+    foodPicture = request.form.get('foodPicture')
+
+    favorite = Favorite.query.filter_by(foodTitle=foodTitle).first()
+
+    if favorite:
+        flash('This menu already exists.')
+        return redirect(url_for('main.homeindex'))
+    # if not g.user:
+    #     flash("Access denied, you need to sign up/in first!", "danger")
+    #     return redirect("/")
+    #
+    # else:
+    #
+    #     form = AddFavoriteForm()
+    new_favorite = Favorite(
+        userID=userID,
+        foodTitle=foodTitle,
+        foodPicture=foodPicture
+    )
+    db.session.add(new_favorite)
+    db.session.commit()
+
+    print('add favorite success!!')
+
+
+    return redirect(url_for('main.homeindex'))

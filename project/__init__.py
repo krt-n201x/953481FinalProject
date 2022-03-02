@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
-
+from .process import get_and_clean_data
+from .process import exampleoutput
+dataframe = get_and_clean_data()
+dataexanple = exampleoutput(dataframe)
 db = SQLAlchemy()
 
 def create_app():
@@ -26,5 +29,9 @@ def create_app():
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    @app.before_first_request
+    def create_table():
+        db.create_all()
 
     return app

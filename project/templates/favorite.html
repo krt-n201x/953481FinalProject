@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+  Welcome, {{ name }} this is your favorite list
+
+  {% for item in data %}
+<p>
+    food name: {{item.foodTitle}}
+
+</p>
+{% endfor %}
+</h1>
+
+{% endblock %}
