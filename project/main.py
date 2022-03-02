@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, app
+import pandas as pd
+from flask import Blueprint, render_template, app, request
 from flask_login import login_required, current_user
 from . import dataexanple
 from .models import Favorite
@@ -24,6 +25,20 @@ def profile():
 @login_required
 def favorite():
     favorites = Favorite.query.filter(Favorite.userID == current_user.id).all()
+    return render_template('favorite.html', data=favorites , userid=current_user.id)
+
+@main.route('/favorite-search', methods=["POST"])
+@login_required
+def favoritesearch():
+    tempJson = []
+    favorites = Favorite.query.filter(Favorite.userID == current_user.id).all()
+    for i in favorites:
+        # print(i.foodTitle)
+        tempJson.append([i.id,
+                         i.foodTitle,
+                         i.foodPicture])
+    Jsondf = pd.DataFrame(tempJson, columns=["id", "foodTitle", "foodPicture"])
+    print(Jsondf.to_markdown())
 
     return render_template('favorite.html', data=favorites , userid=current_user.id)
 

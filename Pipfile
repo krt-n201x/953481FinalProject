@@ -9,6 +9,7 @@ flask-login = "*"
 flask-sqlalchemy = "*"
 pandas = "*"
 flask-migrate = "*"
+tabulate = "*"
 
 [dev-packages]
 
