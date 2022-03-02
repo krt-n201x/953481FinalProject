@@ -1,15 +1,11 @@
 import string
 import pandas as pd
 
-
-
 def get_and_clean_data():
     data = pd.read_csv('src/resource/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')
+    data = data.dropna()
 
-    id = data['No']
     title = data['Title'].astype(str)
-    ingredients = data['Cleaned_Ingredients'].astype(str)
-    instructions = data['Instructions'].astype(str)
     image_name = data['Image_Name'].astype(str)
 
     # clean title #
@@ -19,28 +15,36 @@ def get_and_clean_data():
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
 
     # clean instructions #
+    instructions = data['Instructions'].astype(str)
+    punctuation = "!\"#$%&'*+,-:<=>?@[]^_`{|}~"
     cleaned_instructions = instructions.apply(
-        lambda s: s.translate(str.maketrans('', '', string.punctuation + u'\xa0')))
+        lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
     cleaned_instructions = cleaned_instructions.apply(lambda s: s.lower())
     cleaned_instructions = cleaned_instructions.apply(
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
 
     # clean ingredients #
-    punctuation = "!\"#$%&'()*+,-.:;<=>?@[\]^_`{|}~/or"
+    ingredients = data['Cleaned_Ingredients'].astype(str)
+    punctuation = "!\"#$%&'()*+,-:;<=>?@[]^_`{|}~"
     cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
     cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
     cleaned_ingredients = cleaned_ingredients.apply(
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
 
     # make new csv dataset #
-    cleaned_csv_data = {"id": id, "Title": cleaned_title, "Instructions": cleaned_instructions,
+    cleaned_csv_data = {"Title": cleaned_title, "Instructions": cleaned_instructions,
                         "Image_Name": image_name, "Ingredients": cleaned_ingredients}
     dataFrame = pd.DataFrame(data=cleaned_csv_data)
-
+    dataFrame.dropna()
+    dataFrame.reset_index(inplace=True)
+    del dataFrame['index']
     try:
-        dataFrame.to_csv("src/resource/Food Recipe.csv", encoding="utf8", index=False)
+        dataFrame.to_csv("src/resource/Food Recipe.csv", encoding="utf8")
         print("Generate new csv")
     except:
         print("Error")
+
+    dataFrame = pd.read_csv('src/resource/Food Recipe.csv')
+
 
 
