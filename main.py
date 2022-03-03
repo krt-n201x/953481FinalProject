@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 def get_and_clean_data():
     data = pd.read_csv('src/resource/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')
+    data = data.replace('#NAME?', np.nan)
     data = data.dropna()
 
     title = data['Title'].astype(str)
