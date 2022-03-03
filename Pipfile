@@ -9,6 +9,10 @@ flask-login = "*"
 flask-sqlalchemy = "*"
 pandas = "*"
 flask-migrate = "*"
+tabulate = "*"
+scikit-learn = "*"
+spellchecker = "*"
+pyspellchecker = "*"
 
 [dev-packages]
 

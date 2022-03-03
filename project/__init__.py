@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from .process import get_and_clean_data
 from .process import exampleoutput
 dataframe = get_and_clean_data()
-dataexanple = exampleoutput(dataframe)
+dataexample = exampleoutput(dataframe)
 db = SQLAlchemy()
 
 def create_app():
