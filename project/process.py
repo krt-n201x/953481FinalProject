@@ -36,14 +36,12 @@ def get_and_clean_data():
     cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
     cleaned_ingredients = cleaned_ingredients.apply(
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
-
     # make new csv dataset #
     cleaned_csv_data = {"id": id, "Title": cleaned_title, "Instructions": cleaned_instructions,
                         "Image_Name": image_name, "Ingredients": cleaned_ingredients}
     dataFrame = pd.DataFrame(data=cleaned_csv_data)
-    findfooddetails(dataFrame, "apples and oranges")
+    
     try:
-        # dataFrame.to_csv("src/resource/Food Recipe.csv", encoding="utf8", index=False)
         print("data cleaned!")
         return dataFrame
     except:
@@ -53,9 +51,9 @@ def exampleoutput(dataFrame):
     print("create example output...")
     data = dataFrame
     tempJson = []
-    for i in range(10):
-        data.at[i, 'Image_Name'] = data.at[i, 'Image_Name'] + ".jpg"
-    #     tempJson.append([[data.at[i, 'id']],[data.at[i, 'Title']],[data.at[i, 'Image_Name']]])
+    for i in range(8):
+    #   data.at[i, 'Image_Name'] = data.at[i, 'Image_Name'] + ".jpg"
+    #   tempJson.append([[data.at[i, 'id']],[data.at[i, 'Title']],[data.at[i, 'Image_Name']]])
         tempJson.append({"id": data.at[i, 'id'],
                          "Title": data.at[i, 'Title'],
                          "Image_Name": data.at[i, 'Image_Name']})
@@ -63,6 +61,22 @@ def exampleoutput(dataFrame):
     print('success create json example')
     return tempJson
     # df = pd.DataFrame(tempJson, columns=["no","artist","songname","lyric"])
+
+def searchtfidf(inputword,df_new,where):
+    print("TF-IDF is running...")
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2))
+    X = vectorizer.fit_transform(df_new[where])
+    print(X.shape)
+    query = inputword
+    query_vec = vectorizer.transform([query])
+    results = cosine_similarity(X, query_vec).reshape((-1,))
+    tfidfJson = []
+    for i in results.argsort()[::-1]:
+        if results[i] > 0:
+            tfidfJson.append({"id": df_new.iloc[i, 0],
+                             "foodTitle": df_new.iloc[i, 1],
+                             "foodPicture": df_new.iloc[i, 3]})
+    return tfidfJson
 
 def favoritesearchtfidf(inputword,df_new):
     print("TF-IDF is running...")
@@ -73,11 +87,12 @@ def favoritesearchtfidf(inputword,df_new):
     query_vec = vectorizer.transform([query])
     results = cosine_similarity(X, query_vec).reshape((-1,))
     tfidfJson = []
-    for i in results.argsort()[-10:][::-1]:
+    for i in results.argsort()[::-1]:
         print(results[i])
-        tfidfJson.append({"id": df_new.iloc[i, 0],
-                         "foodTitle": df_new.iloc[i, 1],
-                         "foodPicture": df_new.iloc[i, 2]})
+        if results[i] > 0:
+            tfidfJson.append({"id": df_new.iloc[i, 0],
+                             "foodTitle": df_new.iloc[i, 1],
+                             "foodPicture": df_new.iloc[i, 2]})
     return tfidfJson
 
 def wordsuggestion(inputword):
@@ -105,7 +120,6 @@ def findfooddetails(dataframe, inputword):
                                 "Instructions": data.at[i, 'Instructions'],
                                 "Ingredients": data.at[i, 'Ingredients'],
                                 "Image_Name": data.at[i, 'Image_Name']})
-
     # fooddetails[0]["Ingredients"] = re.split(r"\.", fooddetails[0]["Ingredients"])
     text = fooddetails[0]["Ingredients"]
     text = wordsuggestion(text)
