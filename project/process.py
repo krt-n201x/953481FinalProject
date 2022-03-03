@@ -1,10 +1,12 @@
-
+from spellchecker import SpellChecker
 import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 import pandas as pd
+import re
+
+
 
 def get_and_clean_data():
     data = pd.read_csv('src/resource/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')
@@ -29,7 +31,7 @@ def get_and_clean_data():
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
 
     # clean ingredients #
-    punctuation = "!\"#$%&'()*+,-.:;<=>?@[\]^_`{|}~/or"
+    punctuation = "!\"#$%&'()*+,-:;<=>?@[\]^_`{|}~/"
     cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
     cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
     cleaned_ingredients = cleaned_ingredients.apply(
@@ -39,7 +41,7 @@ def get_and_clean_data():
     cleaned_csv_data = {"id": id, "Title": cleaned_title, "Instructions": cleaned_instructions,
                         "Image_Name": image_name, "Ingredients": cleaned_ingredients}
     dataFrame = pd.DataFrame(data=cleaned_csv_data)
-
+    findfooddetails(dataFrame, "apples and oranges")
     try:
         # dataFrame.to_csv("src/resource/Food Recipe.csv", encoding="utf8", index=False)
         print("data cleaned!")
@@ -78,3 +80,38 @@ def favoritesearchtfidf(inputword,df_new):
                          "foodPicture": df_new.iloc[i, 2]})
     return tfidfJson
 
+def wordsuggestion(inputword):
+    spell = SpellChecker()
+    input = inputword.split()
+    wordtemp = []
+    for word in input:
+        wordtemp.append(spell.correction(word))
+    wordtemp=wordtemp
+    wordtemp = ' '.join(wordtemp)
+    if wordtemp == inputword:
+        return inputword
+    else:
+        return wordtemp
+
+def findfooddetails(dataframe, inputword):
+    print("Search food details is running...")
+    data = dataframe
+    foodname = inputword
+    print(foodname)
+    fooddetails = []
+    for i, row in data.iterrows():
+        if data.at[i, 'Title'] == foodname:
+            fooddetails.append({"Title" : data.at[i, 'Title'],
+                                "Instructions": data.at[i, 'Instructions'],
+                                "Ingredients": data.at[i, 'Ingredients'],
+                                "Image_Name": data.at[i, 'Image_Name']})
+
+    # fooddetails[0]["Ingredients"] = re.split(r"\.", fooddetails[0]["Ingredients"])
+    text = fooddetails[0]["Ingredients"]
+    text = wordsuggestion(text)
+    fooddetails[0]["Ingredients"] = text
+    text = fooddetails[0]["Instructions"]
+    text = wordsuggestion(text)
+    fooddetails[0]["Instructions"] = text
+    # print(fooddetails[0])
+    return fooddetails[0]

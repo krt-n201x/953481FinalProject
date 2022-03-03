@@ -11,6 +11,8 @@ pandas = "*"
 flask-migrate = "*"
 tabulate = "*"
 scikit-learn = "*"
+spellchecker = "*"
+pyspellchecker = "*"
 
 [dev-packages]
 
