@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+<dic class="is-align-items-start">
+    <h1 class="title">
+        Find your DISH
+    </h1>
+
+    <div class="container is-max-desktop mb-5 is-align-self-center">
+        {% if searcbyname %}
+        <form action="/searcall" method="POST">
+            <div class="control">
+                <div class="columns is-align-items-center">
+                    <div class="column is-four-fifths">
+                        <input name="suggestwordinput" value="" hidden>
+                        <input name="searcbyname" value=true hidden>
+                        <input class="input is-rounded " type="text" id="inputword" name="inputword"
+                            placeholder="Search by name" value="{{inputword}}">
+                    </div>
+                    <div>
+                        <button class="button is-success is-light ">search</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <form action="/searcall" method="POST">
+            <div>
+                {% if suggestword != "" %}
+                <input name="suggestwordinput" value="{{suggestword}}" hidden>
+                <div class="level-left mb-5 is-align-self-center">
+                    <div class="level-item has-text-centered">or do you mean:</div>
+                    <div class="level-item has-text-centered">
+                        <input name="searcbyname" value=true hidden>
+                        <input name="suggestwordinput" value="" hidden>
+                        <button class="button is-rounded is-small">{{suggestword}}</button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+        {% if result != "" %}
+        <div>found: {{ result }} result</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if searcbyingredient %}
+    <form action="/searcall" method="POST">
+        <div class="control">
+            <div class="columns is-align-items-center">
+                <div class="column is-four-fifths">
+                    <input name="suggestwordinput" value="" hidden>
+                    <input name="searcbyingredient" value=true hidden>
+                    <input class="input is-rounded " type="text" id="inputword" name="inputword"
+                        placeholder="Search by ingredient" value="{{inputword}}">
+                </div>
+                <div>
+                    <button class="button is-success is-light ">search</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form action="/searcall" method="POST">
+        <div>
+            {% if suggestword != "" %}
+            <input name="suggestwordinput" value="{{suggestword}}" hidden>
+            <div class="level-left mb-5 is-align-self-center">
+                <div class="level-item has-text-centered">or do you mean:</div>
+                <div class="level-item has-text-centered">
+                    <input name="searcbyingredient" value=true hidden>
+                    <input name="suggestwordinput" value="" hidden>
+                    <button class="button is-rounded is-small">{{suggestword}}</button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+    {% if result != "" %}
+    <div>found {{ result }} result</div>
+    {% endif %}
+    </div>
+    {% endif %}
+
+    {% if data != "" %}
+    <div class="columns is-multiline mb-5">
+        {% for item in data[-10:] %}
+        <div class="column is-one-quarter is-mobile">
+          <div class="card">
+            <header class="card-header" style="height:60px">
+              <p class="card-header-title">
+                {{item.foodTitle}}
+              </p>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <img src="../static/FoodImages/{{item.foodPicture}}.jpg">
+              </div>
+            </div>
+            <div class="columns is-desktop">
+              <div class="column">
+                <form action="/readindetails" method="POST">
+                  <input name="foodTitle" value="{{item.foodTitle}}" hidden>
+                  <button class="button is-link is-inverted ">Read</button>
+                </form>
+              </div>
+              <div class="column">
+                <form action="/add-favorite" method="POST">
+                  <div class="control">
+                    <input name="foodTitle" value="{{item.foodTitle}}" hidden>
+                    <input name="userID" value="{{userid}}" hidden>
+                    <input name="foodPicture" value="{{item.foodPicture}}" hidden>
+                    <button class="button is-inverted">
+                      <span class="icon has-text-danger">
+                        <i class="fa fa-light fa-heart"></i>
+                      </span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+</dic>
+
+{% endblock %}
