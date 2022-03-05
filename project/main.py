@@ -4,8 +4,8 @@ from flask import Blueprint, render_template, app, request
 from flask_login import login_required, current_user
 from . import dataexample, dataframe
 from .models import Favorite
-from .process import favoritesearchtfidf, wordsuggestion, findfooddetails, searchtfidf
-
+from .process import favoritesearchtfidf, wordsuggestion, findfooddetails, searchtfidf,pagination,currentpage
+import json
 main = Blueprint('main', __name__)
 
 
@@ -49,8 +49,10 @@ def searcall():
         searcbyingredient = request.form.get("searcbyingredient")
         suggestwordinput = request.form.get("suggestwordinput")
         inputword = request.form.get("inputword")
+        page = int(request.form.get("inputpage"))
+        print(page)
         print(searcbyname,searcbyingredient,suggestwordinput,inputword)
-        data =""
+        data = ""
         if suggestwordinput != "":
             inputword = suggestwordinput
         else:
@@ -64,24 +66,30 @@ def searcall():
         if suggestword != inputword:
             suggestwordreturn = suggestword
 
-        result = 0
-        for i in data:
-            result = result+1
-        print(result)
+        # pagination
+        result = len(data)
+        data = pagination(data,page)
+        allpage = len(data)
+        hasotherpage = currentpage(page,allpage)
+        print(hasotherpage[0])
+        data = data[page]
+        # print(dara)
 
-        return render_template('searchall.html',data=data, userid=current_user.id, searcbyname=searcbyname, searcbyingredient=searcbyingredient,suggestword=suggestwordreturn, result=result)
+        return render_template('searchall.html',data=data, userid=current_user.id, searcbyname=searcbyname, searcbyingredient=searcbyingredient,suggestword=suggestwordreturn, result=result, inputword=inputword, allpage=allpage, hasotherpage=hasotherpage, page=page)
 
 @main.route('/favorite')
 @login_required
 def favorite():
     favorites = Favorite.query.filter(Favorite.userID == current_user.id).all()
     suggestwordreturn = ""
-    return render_template('favorite.html', data=favorites , userid=current_user.id,suggestword=suggestwordreturn)
+    result = ""
+    return render_template('favorite.html', data=favorites , userid=current_user.id,suggestword=suggestwordreturn, result=result)
 
 @main.route('/favorite-search', methods=["POST"])
 @login_required
 def favoritesearch():
     tempJson = []
+    data =""
     suggestwordinput = request.form.get("suggestwordinput")
     if suggestwordinput != "":
         inputword = suggestwordinput
@@ -93,12 +101,14 @@ def favoritesearch():
                          i.foodTitle,
                          i.foodPicture])
     df = pd.DataFrame(tempJson, columns=["id", "foodTitle", "foodPicture"])
-    data = favoritesearchtfidf(inputword,df)
+    if not df.empty:
+        data = favoritesearchtfidf(inputword,df)
     suggestword = wordsuggestion(inputword)
     suggestwordreturn = ""
     if suggestword != inputword:
         suggestwordreturn = suggestword
-    return render_template('favorite.html', data=data , userid=current_user.id,suggestword=suggestwordreturn,inputword=inputword)
+    result = len(data)
+    return render_template('favorite.html', data=data , userid=current_user.id,suggestword=suggestwordreturn,inputword=inputword,result=result)
 
 
 

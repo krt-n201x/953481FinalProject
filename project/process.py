@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import re
+import np
 
 
 
@@ -121,11 +122,55 @@ def findfooddetails(dataframe, inputword):
                                 "Ingredients": data.at[i, 'Ingredients'],
                                 "Image_Name": data.at[i, 'Image_Name']})
     # fooddetails[0]["Ingredients"] = re.split(r"\.", fooddetails[0]["Ingredients"])
-    text = fooddetails[0]["Ingredients"]
-    text = wordsuggestion(text)
-    fooddetails[0]["Ingredients"] = text
-    text = fooddetails[0]["Instructions"]
-    text = wordsuggestion(text)
-    fooddetails[0]["Instructions"] = text
+    # text = fooddetails[0]["Ingredients"]
+    # text = wordsuggestion(text)
+    # fooddetails[0]["Ingredients"] = text
+    # text = fooddetails[0]["Instructions"]
+    # text = wordsuggestion(text)
+    # fooddetails[0]["Instructions"] = text
     # print(fooddetails[0])
     return fooddetails[0]
+
+def currentpage(currentpage, allpage):
+    previouspage = True
+    nextpage = True
+    if currentpage-1 >= 0:
+        previouspage = True
+    else:
+        previouspage = False
+    if currentpage+1 < allpage:
+        nextpage = True
+    else:
+        nextpage = False
+    return [{'previouspage': previouspage,'nextpage': nextpage}]
+
+def pagination(datainput,page):
+    page = page-1
+    dataperpage = 12
+    result = len(datainput)
+    data = []
+    point = 0
+    if result/dataperpage <= 1:
+        data.append(datainput)
+        return data
+    else:
+        pagenumber = result//dataperpage
+        print('have: ',pagenumber,' page')
+        for i in range(pagenumber+1):
+            if point < result:
+                datatemp = []
+                for j in range(dataperpage):
+                    if point < result:
+                        datatemp.append(datainput[point])
+                        point = point+1
+                data.append(datatemp)
+        print(data[page])
+        return data
+    # dict(zip(datainpage,))
+    #         for j in range(dataperpage):
+    #             if data[dataat]:
+    #                 datainpage[i].append({"data": data[dataat]})
+    #                 dataat = dataat+1
+    # print(datainpage[15])
+    # print(datainpage[page-1])
+    # return datainpage[page]

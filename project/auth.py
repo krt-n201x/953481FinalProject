@@ -39,11 +39,18 @@ def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
     password = request.form.get('password')
-
     user = User.query.filter_by(email=email).first()
-
     repassword = request.form.get('re-password')
-    if email or name or password or repassword == "":
+    if email == "":
+        flash('Please fill out the information completely.')
+        return redirect(url_for('auth.signup'))
+    if name == "":
+        flash('Please fill out the information completely.')
+        return redirect(url_for('auth.signup'))
+    if password == "":
+        flash('Please fill out the information completely.')
+        return redirect(url_for('auth.signup'))
+    if repassword == "":
         flash('Please fill out the information completely.')
         return redirect(url_for('auth.signup'))
     if password != repassword:
