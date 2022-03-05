@@ -107,3 +107,18 @@ def tfidf_scoring_by_ingredients():
 
     return tfidf_data_ranking
 
+def pagination(data,page):
+    dataperpage = 12
+    result = len(data)
+    datainpage = []
+    dataat = 0
+    if result/dataperpage <= 1:
+        return
+    else:
+        pagenumber = result/dataperpage
+        for i in pagenumber:
+            for j in dataperpage:
+                if data[dataat]:
+                    datainpage[i].append(data[dataat])
+                    dataat = dataat+1
+    return datainpage[page]
