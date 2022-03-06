@@ -31,11 +31,14 @@ def get_and_clean_data():
 
     # clean ingredients #
     ingredients = data['Cleaned_Ingredients'].astype(str)
-    punctuation = "!\"#$%&'()*+,-:;<=>?@[]^_`{|}~"
+    punctuation = "!\"#$%&()*+-:;<=>?@[]^_`{|}~"
     cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
     cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
     cleaned_ingredients = cleaned_ingredients.apply(
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.replace('\', \'', ','))
+    punctuation2 = "\'"
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation2 + u'\xa0')))
 
     # make new csv dataset #
     cleaned_csv_data = {"Title": cleaned_title, "Instructions": cleaned_instructions,
@@ -55,7 +58,7 @@ def tfidf_scoring_by_title():
 
     csv_file = "src/resource/Food Recipe.csv"
     data = pd.read_csv(csv_file)
-    all_data = pd.DataFrame(data, columns=['Title', 'Image_Name', 'Ingredients'])
+    all_data = pd.DataFrame(data, columns=['Title', 'Instructions', 'Image_Name', 'Ingredients'])
 
     # Tf idf scoring #
     query = input("Enter food title: ")
@@ -71,8 +74,9 @@ def tfidf_scoring_by_title():
         tfidf_data_ranking.append({
             "Rank": rank,
             "Title": all_data.iloc[i, 0],
-            "Image": all_data.iloc[i, 1] + ".jpg",
-            "Ingredient": all_data.iloc[i, 2],
+            "Instructions": all_data.iloc[i, 1],
+            "Image": all_data.iloc[i, 2] + ".jpg",
+            "Ingredient": all_data.iloc[i, 3],
             "Score": results[i]
             }
         )
