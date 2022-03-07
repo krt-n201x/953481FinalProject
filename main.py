@@ -1,7 +1,9 @@
 import string
-
+import nltk
 import numpy as np
 import pandas as pd
+from nltk import word_tokenize
+from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -31,11 +33,22 @@ def get_and_clean_data():
 
     # clean ingredients #
     ingredients = data['Cleaned_Ingredients'].astype(str)
-    punctuation = "!\"#$%&'()*+,-:;<=>?@[]^_`{|}~"
+    punctuation = "!\"#$%&()*+-:;<=>?@[]^_`{|}~"
     cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
     cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
     cleaned_ingredients = cleaned_ingredients.apply(
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.replace('\', \'', ','))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.replace('tsp.', 'tsp.'))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.replace('tbsp.', 'tsp.'))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.replace('Tbsp.', 'tsp.'))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.replace('teaspoon', 'tsp.'))
+
+
+
+
+    punctuation2 = "\'"
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation2 + u'\xa0')))
 
     # make new csv dataset #
     cleaned_csv_data = {"Title": cleaned_title, "Instructions": cleaned_instructions,
@@ -55,7 +68,7 @@ def tfidf_scoring_by_title():
 
     csv_file = "src/resource/Food Recipe.csv"
     data = pd.read_csv(csv_file)
-    all_data = pd.DataFrame(data, columns=['Title', 'Image_Name', 'Ingredients'])
+    all_data = pd.DataFrame(data, columns=['Title', 'Instructions', 'Image_Name', 'Ingredients'])
 
     # Tf idf scoring #
     query = input("Enter food title: ")
@@ -71,8 +84,9 @@ def tfidf_scoring_by_title():
         tfidf_data_ranking.append({
             "Rank": rank,
             "Title": all_data.iloc[i, 0],
-            "Image": all_data.iloc[i, 1] + ".jpg",
-            "Ingredient": all_data.iloc[i, 2],
+            "Instructions": all_data.iloc[i, 1],
+            "Image": all_data.iloc[i, 2] + ".jpg",
+            "Ingredient": all_data.iloc[i, 3],
             "Score": results[i]
             }
         )
@@ -106,6 +120,46 @@ def tfidf_scoring_by_ingredients():
         )
 
     return tfidf_data_ranking
+
+
+def cleaned_ingredient_for_suggestion():
+    data = pd.read_csv('src/resource/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')
+    data = data.replace('#NAME?', np.nan)
+    data = data.dropna()
+
+    # clean ingredients #
+    ingredients = data['Cleaned_Ingredients'].astype(str)
+    cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', string.punctuation + u'\xa0')))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
+    cleaned_ingredients = cleaned_ingredients.apply(
+        lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
+
+    cleaned_ingredients = {"Ingredients": cleaned_ingredients}
+    dataFrame = pd.DataFrame(data=cleaned_ingredients)
+
+    for i, row in dataFrame.iterrows():
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('tsp', '')
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('lb', '')
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('oz', '')
+
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('½', '')
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('¾', '')
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('⅓', '')
+        dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace('¼', '')
+
+
+        for digit in dataFrame.at[i, 'Ingredients']:
+            if digit.isdigit():
+                dataFrame.at[i, 'Ingredients'] = dataFrame.at[i, 'Ingredients'].replace(digit, '')
+
+    dataFrame["Ingredients"] = dataFrame["Ingredients"].str.replace('[^\w\s]','')
+    dataFrame["Ingredients"] = dataFrame["Ingredients"].str.replace('  ',' ')
+    dataFrame["Ingredients"] = dataFrame["Ingredients"].str.replace('   ',' ')
+
+
+    print(dataFrame.head(5).to_markdown())
+
+    return dataFrame
 
 def pagination(data,page):
     dataperpage = 12
