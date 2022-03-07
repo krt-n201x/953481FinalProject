@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, app, request
 from flask_login import login_required, current_user
 from . import dataexample, dataframe
 from .models import Favorite
-from .process import favoritesearchtfidf, wordsuggestion, findfooddetails, searchtfidf,pagination,currentpage
+from .process import favoritesearchtfidf, wordsuggestion, findfooddetails, searchtfidf,pagination,currentpage,cleaned_ingredient_for_suggestion
 import json
 main = Blueprint('main', __name__)
 
@@ -24,8 +24,26 @@ def homeindex():
 @login_required
 def fooddetails():
     fooddetails = request.form.get("foodTitle")
+    print(dataframe)
     data = findfooddetails(dataframe,fooddetails)
-    return render_template('fooddetails.html', data=data)
+    datatemp = data['Ingredients'].split(",")
+    Ingredients = data['Ingredients']
+    Instructions = data['Instructions']
+    Ingredients = Ingredients.replace("[", "")
+    Ingredients = Ingredients.replace("]", "")
+    Ingredients = Ingredients.replace("'", "")
+    Ingredients = Ingredients.split(",");
+    Instructions = Instructions.split(".");
+    df = pd.DataFrame(datatemp, columns=['Ingredients'])
+    df = cleaned_ingredient_for_suggestion(df)
+    jsoninput = []
+    for i, row in df.iterrows():
+       jsoninput.append(df.at[i, 'Ingredients_clean'])
+    jsoninput = ' '.join(jsoninput)
+    print(jsoninput)
+    data2 = searchtfidf(jsoninput,dataframe,'cleaned_ingredients')
+    data2 = data2[1:5]
+    return render_template('fooddetails.html', data=data, Ingredients=Ingredients, Instructions=Instructions, data2=data2)
 
 @main.route('/profile')
 @login_required

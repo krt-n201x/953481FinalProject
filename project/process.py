@@ -25,23 +25,29 @@ def get_and_clean_data():
         lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
 
     # clean instructions #
-    cleaned_instructions = instructions.apply(
-        lambda s: s.translate(str.maketrans('', '', string.punctuation + u'\xa0')))
-    cleaned_instructions = cleaned_instructions.apply(lambda s: s.lower())
-    cleaned_instructions = cleaned_instructions.apply(
-        lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
+    # cleaned_instructions = instructions.apply(
+    #     lambda s: s.translate(str.maketrans('', '', string.punctuation + u'\xa0')))
+    # cleaned_instructions = cleaned_instructions.apply(lambda s: s.lower())
+    # cleaned_instructions = cleaned_instructions.apply(
+    #     lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
 
     # clean ingredients #
-    punctuation = "!\"#$%&'()*+,-:;<=>?@[\]^_`{|}~/"
-    cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
-    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
-    cleaned_ingredients = cleaned_ingredients.apply(
-        lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
+    # punctuation = "!\"#$%&'()*+,-:;<=>?@[\]^_`{|}~/"
+    # cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', punctuation + u'\xa0')))
+    # cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
+    # cleaned_ingredients = cleaned_ingredients.apply(
+    #     lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
     # make new csv dataset #
-    cleaned_csv_data = {"id": id, "Title": cleaned_title, "Instructions": cleaned_instructions,
-                        "Image_Name": image_name, "Ingredients": cleaned_ingredients}
+    cleaned_csv_data = {"id": id, "Title": cleaned_title, "Instructions": instructions,
+                        "Image_Name": image_name, "Ingredients": ingredients, "cleaned_ingredients": "" }
     dataFrame = pd.DataFrame(data=cleaned_csv_data)
-    
+
+    cleaned_ingredients = cleaned_ingredient_for_suggestion(dataFrame)
+    for i, row in cleaned_ingredients.iterrows():
+        dataFrame.at[i, 'cleaned_ingredients'] = cleaned_ingredients.at[i, 'Ingredients_clean']
+
+    print(dataFrame)
+
     try:
         print("data cleaned!")
         return dataFrame
@@ -65,8 +71,9 @@ def exampleoutput(dataFrame):
 
 def searchtfidf(inputword,df_new,where):
     print("TF-IDF is running...")
+    df = df_new
     vectorizer = TfidfVectorizer(ngram_range=(1, 2))
-    X = vectorizer.fit_transform(df_new[where])
+    X = vectorizer.fit_transform(df[where].values.astype('U'))
     print(X.shape)
     query = inputword
     query_vec = vectorizer.transform([query])
@@ -174,3 +181,55 @@ def pagination(datainput,page):
     # print(datainpage[15])
     # print(datainpage[page-1])
     # return datainpage[page]
+
+
+def cleaned_ingredient_for_suggestion(data):
+    data = data
+    data = data.replace('#NAME?', np.nan)
+    data = data.dropna()
+
+    # clean ingredients #
+    ingredients = data['Ingredients'].astype(str)
+    cleaned_ingredients = ingredients.apply(lambda s: s.translate(str.maketrans('', '', string.punctuation + u'\xa0')))
+    cleaned_ingredients = cleaned_ingredients.apply(lambda s: s.lower())
+    cleaned_ingredients = cleaned_ingredients.apply(
+        lambda s: s.translate(str.maketrans(string.whitespace, ' ' * len(string.whitespace), '')))
+
+    cleaned_ingredients = {"Ingredients_clean": cleaned_ingredients}
+    dataFrame = pd.DataFrame(data=cleaned_ingredients)
+
+    for i, row in dataFrame.iterrows():
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('sliced', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('tsp.', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('divided', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('Tbsp.', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('cups', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('cup', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('pounds', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('pound', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('teaspoons', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('teaspoon', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('tablespoons', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('tablespoon', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('tsp', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('lb', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('oz', '')
+
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('½', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('¾', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('⅓', '')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('¼', '')
+
+
+        for digit in dataFrame.at[i, 'Ingredients_clean']:
+            if digit.isdigit():
+                dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace(digit, '')
+
+    dataFrame["Ingredients_clean"] = dataFrame["Ingredients_clean"].str.replace('[^\w\s]','')
+    dataFrame["Ingredients_clean"] = dataFrame["Ingredients_clean"].str.replace('  ',' ')
+    dataFrame["Ingredients_clean"] = dataFrame["Ingredients_clean"].str.replace('   ',' ')
+
+
+
+
+    return dataFrame
