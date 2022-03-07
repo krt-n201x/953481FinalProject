@@ -16,12 +16,59 @@
   </div>
   <div class="columns is-desktop">
     <div class="column is-one-third is-size-3 has-text-weight-semibold">Ingredients: </div>
-    <div class="column" style="text-align: left;">{{ data.Ingredients }}</div>
+    <div class="column" style="text-align: left;">{% for item in Ingredients %}<p> {{ item }} </p>{% endfor %}</div>
   </div>
   <div class="columns is-desktop">
     <div class="column is-one-third is-size-3 has-text-weight-semibold">Instructions: </div>
-    <div class="column" style="text-align: left;">{{ data.Instructions }}</div>
+    <div class="column" style="text-align: left;">{% for item in Instructions %}<p>- {{ item }} </p><br> {% endfor %}</div>
   </div>
+
+  {% if data2 != "" %}
+  <h1 class="title">
+    Suggestion by similar ingredient
+   </h1>
+    <div class="columns is-multiline mb-5">
+        {% for item2 in data2 %}
+        <div class="column is-one-quarter is-mobile">
+          <div class="card">
+            <header class="card-header" style="height:60px">
+              <p class="card-header-title">
+                {{item2.foodTitle}}
+              </p>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <img src="../static/FoodImages/{{item2.foodPicture}}.jpg">
+              </div>
+            </div>
+            <div class="columns is-desktop">
+              <div class="column">
+                <form action="/readindetails" method="POST">
+                  <input name="foodTitle" value="{{item2.foodTitle}}" hidden>
+                  <button class="button is-link is-inverted ">Read</button>
+                </form>
+              </div>
+              <div class="column">
+                <form action="/add-favorite" method="POST">
+                  <div class="control">
+                    <input name="foodTitle" value="{{item2.foodTitle}}" hidden>
+                    <input name="userID" value="{{userid}}" hidden>
+                    <input name="foodPicture" value="{{item2.foodPicture}}" hidden>
+                    <button class="button is-inverted">
+                      <span class="icon has-text-danger">
+                        <i class="fa fa-light fa-heart"></i>
+                      </span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
 </dic>
 
 
