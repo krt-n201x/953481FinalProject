@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, app, request
 from flask_login import login_required, current_user
 from . import dataexample, dataframe
 from .models import Favorite
-from .process import favoritesearchtfidf, wordsuggestion, findfooddetails, searchtfidf,pagination,currentpage,cleaned_ingredient_for_suggestion
+from .process import favoritesearchtfidf, wordsuggestion, findfooddetails, searchtfidf,pagination,currentpage,cleaned_ingredient_for_suggestion, suggestiondrop
 import json
 main = Blueprint('main', __name__)
 
@@ -18,13 +18,30 @@ def index():
 def homeindex():
     inputword = request.form.get("inputword")
     suggestwordreturn = ""
-    return render_template('index.html', data=dataexample, userid=current_user.id,suggestword=suggestwordreturn,inputword=inputword)
+    favorites = Favorite.query.filter(Favorite.userID == current_user.id).all()
+    data3 = ""
+    if len(favorites) > 0:
+        tempJson = []
+        for i in favorites:
+            data = findfooddetails(dataframe, i.foodTitle)
+            tempJson.append([i.id,
+                             i.foodTitle,
+                             data['cleaned_ingredients']])
+        df = pd.DataFrame(tempJson, columns=["id", "foodTitle", "cleaned_ingredients"])
+        tempinput = ""
+        tempdrop = []
+        for i in df['cleaned_ingredients']:
+            tempinput = i + ' ' + tempinput
+        for i in df['foodTitle']:
+            tempdrop.append(i)
+        data2 = searchtfidf(tempinput, dataframe, 'cleaned_ingredients')
+        data3 = suggestiondrop(tempdrop,data2)
+    return render_template('index.html', data=dataexample, userid=current_user.id,suggestword=suggestwordreturn,inputword=inputword,data2=data3[1:5])
 
 @main.route('/readindetails', methods=['POST'])
 @login_required
 def fooddetails():
     fooddetails = request.form.get("foodTitle")
-    print(dataframe)
     data = findfooddetails(dataframe,fooddetails)
     datatemp = data['Ingredients'].split(",")
     Ingredients = data['Ingredients']

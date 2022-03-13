@@ -3,11 +3,41 @@ import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from keras.preprocessing.text import Tokenizer
 import pandas as pd
 import re
-import np
+import numpy as np
+import spacy
 
+def readtoken():
+    # with open(r"src/resource/tokenizedtext.csv", 'rb') as f:
+    #     reader = csv.reader(f)
+    #     return reader
+    df_clean = pd.read_csv('src/resource/tokenizedtext.csv',
+                           lineterminator='\n')
+    print("Read token file Done!")
+    data = []
+    for i in df_clean["0"]:
+        i = i.replace("\r", '')
+        data.append({i})
+    data = pd.DataFrame(data, columns=["token"])
+    data = data["token"].astype(str)
+    # predic = ""
+    # for i, row in data.iterrows():
+    #     predic = data.at[i, 'token'] + " " + predic
 
+    model = Tokenizer()
+    model.fit_on_texts(data)
+    data = list(model.word_index.keys())
+
+    return data
+
+nlp = spacy.load('en_core_web_sm')
+spell = SpellChecker()
+print("bag of word creating...")
+token_tex = readtoken()
+print("create bag of word Done")
+spell.word_frequency.load_words(token_tex)
 
 def get_and_clean_data():
     data = pd.read_csv('src/resource/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')
@@ -41,18 +71,31 @@ def get_and_clean_data():
     cleaned_csv_data = {"id": id, "Title": cleaned_title, "Instructions": instructions,
                         "Image_Name": image_name, "Ingredients": ingredients, "cleaned_ingredients": "" }
     dataFrame = pd.DataFrame(data=cleaned_csv_data)
-
     cleaned_ingredients = cleaned_ingredient_for_suggestion(dataFrame)
     for i, row in cleaned_ingredients.iterrows():
         dataFrame.at[i, 'cleaned_ingredients'] = cleaned_ingredients.at[i, 'Ingredients_clean']
+    # print(dataFrame)
+    print('Create Dataframe Done!')
 
-    print(dataFrame)
+    ###############################################################################################################
+    ###############################################################################################################
+    # token #already prepare
+    # print('Tokenizing...')
+    # datadoc = dataFrame["Title"] + ' ' + dataFrame["cleaned_ingredients"] + ' ' + dataFrame["Instructions"]
+    # cleaned_text = clean_text(datadoc)
+    # token_tex = text_tokenizer(cleaned_text)
+    # pd.Series(token_tex).to_csv('tokenized_text.csv')
+    # token_tex[0]
+    # print('Creating csv of word')
+    ###############################################################################################################
+    ###############################################################################################################
 
     try:
         print("data cleaned!")
         return dataFrame
     except:
         print("Error")
+
 
 def exampleoutput(dataFrame):
     print("create example output...")
@@ -104,7 +147,6 @@ def favoritesearchtfidf(inputword,df_new):
     return tfidfJson
 
 def wordsuggestion(inputword):
-    spell = SpellChecker()
     input = inputword.split()
     wordtemp = []
     for word in input:
@@ -127,7 +169,8 @@ def findfooddetails(dataframe, inputword):
             fooddetails.append({"Title" : data.at[i, 'Title'],
                                 "Instructions": data.at[i, 'Instructions'],
                                 "Ingredients": data.at[i, 'Ingredients'],
-                                "Image_Name": data.at[i, 'Image_Name']})
+                                "Image_Name": data.at[i, 'Image_Name'],
+                                "cleaned_ingredients": data.at[i, 'cleaned_ingredients']})
     # fooddetails[0]["Ingredients"] = re.split(r"\.", fooddetails[0]["Ingredients"])
     # text = fooddetails[0]["Ingredients"]
     # text = wordsuggestion(text)
@@ -214,13 +257,14 @@ def cleaned_ingredient_for_suggestion(data):
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('tsp', '')
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('lb', '')
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('oz', '')
-
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('½', '')
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('¾', '')
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('⅓', '')
         dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('¼', '')
-
-
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('  ', ' ')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('   ', ' ')
+        dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace('\n', ' ')
+        dataFrame.at[i, 'Ingredients_clean'] = re.sub(' +', ' ', dataFrame.at[i, 'Ingredients_clean'])
         for digit in dataFrame.at[i, 'Ingredients_clean']:
             if digit.isdigit():
                 dataFrame.at[i, 'Ingredients_clean'] = dataFrame.at[i, 'Ingredients_clean'].replace(digit, '')
@@ -229,7 +273,32 @@ def cleaned_ingredient_for_suggestion(data):
     dataFrame["Ingredients_clean"] = dataFrame["Ingredients_clean"].str.replace('  ',' ')
     dataFrame["Ingredients_clean"] = dataFrame["Ingredients_clean"].str.replace('   ',' ')
 
-
-
-
     return dataFrame
+# tokenizer part
+def clean_text(documents):
+    cleaned_text = []
+    for doc in documents:
+        doc = doc.translate(str.maketrans('', '', string.punctuation)) # Remove Punctuation
+        doc = re.sub(r'\d+', '', doc) # Remove Digits
+        doc = doc.replace('\n',' ') # Remove New Lines
+        doc = doc.strip() # Remove Leading White Space
+        doc = re.sub(' +', ' ', doc) # Remove multiple white spaces
+        cleaned_text.append(doc)
+    return cleaned_text
+
+def text_tokenizer(documents):
+    tokenized_documents = []
+    index = 1
+    for doc in documents:
+        tok_doc = ' '.join([token.lemma_ for token in nlp(doc) if not token.is_stop])
+        print("done ", index, " of ", len(documents))
+        index = index+1
+        tokenized_documents.append(tok_doc)
+    return tokenized_documents
+
+def suggestiondrop(fevdata,suggestdata):
+    print("suggestion filter running...")
+    listdata = len(fevdata)
+    data = suggestdata[listdata:]
+    print("suggestion filter done")
+    return data
