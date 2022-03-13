@@ -17,7 +17,7 @@
                             placeholder="Search by name" value="{{inputword}}">
                     </div>
                     <div>
-                        <button class="button is-success is-light ">search</button>
+                        <button class="button is-success is-light " name="search-button">search</button>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                         placeholder="Search by ingredient" value="{{inputword}}">
                 </div>
                 <div>
-                    <button class="button is-success is-light ">search</button>
+                    <button class="button is-success is-light " name="search-button">search</button>
                 </div>
             </div>
         </div>
@@ -87,7 +87,7 @@
         <div class="column is-one-quarter is-mobile">
           <div class="card">
             <header class="card-header" style="height:60px">
-              <p class="card-header-title">
+              <p class="card-header-title" name="{{item.foodTitle}}">
                 {{item.foodTitle}}
               </p>
             </header>

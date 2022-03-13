@@ -3,6 +3,7 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from .process import get_and_clean_data
 from .process import exampleoutput
+
 dataframe = get_and_clean_data()
 dataexample = exampleoutput(dataframe)
 db = SQLAlchemy()

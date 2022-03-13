@@ -25,7 +25,7 @@
         <div class="control">
           <input name="searcbyname" value=true hidden>
           <input name="getin" value=true hidden>
-          <button class="button is-success is-light is-fullwidth is-rounded">Find Food name</button>
+          <button class="button is-success is-light is-fullwidth is-rounded" name="search-food-name">Find Food name</button>
         </div>
       </form>
     </div>
@@ -36,7 +36,7 @@
         <div class="control">
           <input name="searcbyingredient" value=true hidden>
           <input name="getin" value=true hidden>
-          <button class="button is-success is-light is-fullwidth is-rounded">Find Food ingredient</button>
+          <button class="button is-success is-light is-fullwidth is-rounded" name="search-food-ingredients">Find Food ingredient</button>
         </div>
       </form>
     </div>
@@ -92,7 +92,7 @@
               <input name="foodTitle" value="{{item.Title}}" hidden>
               <input name="userID" value="{{userid}}" hidden>
               <input name="foodPicture" value="{{item.Image_Name}}" hidden>
-              <button class="button is-inverted">
+              <button class="button is-inverted" name="add-favorite-button">
                 <span class="icon has-text-danger">
                   <i class="fa fa-light fa-heart"></i>
                 </span>
